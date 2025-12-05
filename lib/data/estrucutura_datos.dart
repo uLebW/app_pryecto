@@ -43,7 +43,11 @@ class Nota {
   final String descripcion;
   final DateTime fechaLimite;
   final List<Tarea> tareas;
-
+  double get porcentajeProgreso {
+    if (tareas.isEmpty) return 0.0;
+    int completadas = tareas.where((t) => t.completada).length;
+    return completadas / tareas.length;
+  }
 
 
   Nota({
@@ -53,6 +57,7 @@ class Nota {
     required this.descripcion,
     required this.fechaLimite,
     this.tareas = const [],
+    
   });
 
  factory Nota.fromJson(Map<String, dynamic> json) {
