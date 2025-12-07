@@ -6,9 +6,9 @@ import '../data/estrucutura_datos.dart';
 import '../data/nota_repo.dart';
 
 class NotaBloc extends Bloc<NotaEvento, NotaEstado> {
-  final NotaRepo _rep = NotaRepo();
+  final NotaRepo repob;
   // Inicialización con el estado de carga
-  NotaBloc() : super(LoadingEstado()) {
+  NotaBloc({required this.repob}) : super(LoadingEstado()) {
     on<LoadNotas>(_onLoadNotas);
     on<AddNotaEvento>(_onAddNota);
     on<ActualizarTarea>(_ActualizarTarea);
@@ -18,7 +18,7 @@ class NotaBloc extends Bloc<NotaEvento, NotaEstado> {
   void _onAddNota(AddNotaEvento event, Emitter<NotaEstado> emit) async {
     try {
       // ⭐️ Guardar en Supabase
-      await _rep.addNota(event.note); 
+      await repob.addNota(event.note); 
       
       // ⭐️ Recargar la lista para obtener el estado actual con el nuevo ID
       add(LoadNotas()); 
@@ -35,7 +35,7 @@ class NotaBloc extends Bloc<NotaEvento, NotaEstado> {
 
   void _ActualizarTarea(ActualizarTarea event, Emitter<NotaEstado> emit) async{
     try{
-      await _rep.updateTarea(event.tarea);
+      await repob.updateTarea(event.tarea);
       add(LoadNotas());
     } catch (e){
       if(state is LoadedEvento){
@@ -48,7 +48,7 @@ class NotaBloc extends Bloc<NotaEvento, NotaEstado> {
 
   void _onDeleteNota(DeleteNotasEvento event, Emitter<NotaEstado> emit) async{
     try{
-      await _rep.deleteNota(event.nota.id);
+      await repob.deleteNota(event.nota.id);
       add(LoadNotas());
     } catch (e){
       if (state is LoadedEvento){
@@ -63,7 +63,7 @@ class NotaBloc extends Bloc<NotaEvento, NotaEstado> {
 
   void _onLoadNotas(LoadNotas event, Emitter<NotaEstado> emit) async {
   try{
-       final List<Nota> notas = await _rep.fetchNotas();
+       final List<Nota> notas = await repob.fetchNotas();
        emit(LoadedEvento(notas));
     } catch (e){
        emit(ErorNota('Fallo al cargar nota: $e'));

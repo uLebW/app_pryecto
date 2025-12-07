@@ -7,15 +7,77 @@ const String _url ='https://hzmajhilisgdunaouvwr.supabase.co';
 const String _Anonkey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6bWFqaGlsaXNnZHVuYW91dndyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5Njg1OTAsImV4cCI6MjA3NjU0NDU5MH0.cYSgZ0buAzniR28ziOfR-d1jYN14JecgaTVbCKRLiwU';
 
 const _baseUrl = '$_url/rest/v1';
+const _authUrl = '$_url/auth/v1';
 
-const Map<String, String> _headers ={
-  'Content-Type':'application/json',
-  'apikey':_Anonkey,
-  'Authorization': 'Bearer $_Anonkey' 
-};
+
 
 class NotaRepo {
   final http.Client httpClient = http.Client();
+
+  String? _token;
+
+  Map<String, String> get _headers => {
+  'Content-Type':'application/json',
+  'apikey':_Anonkey,
+  'Authorization': 'Bearer ${_token ?? _Anonkey}' 
+   };
+
+
+   Future<void> login(String email, String password)async{
+    try{
+      final res = await httpClient.post(
+        Uri.parse('$_authUrl/token?grant_type=password'),
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': _Anonkey
+        },
+        body: json.encode({'email':email, 'password':password}),
+      );
+      if(res.statusCode == 200){
+        final data = json.decode(res.body);
+        _token = data['access_token'];
+        developer.log('Log exitoso', name: 'AUTH');
+      }else{
+        throw Exception('Error en login: ${res.body}');
+      }
+    }catch(e){
+      developer.log('Excepcion en login', error: e.toString());
+      rethrow;
+    }
+   }
+
+   Future<void> registro(String email, String password, String user)async{
+    try{
+      final res = await httpClient.post(
+        Uri.parse('$_authUrl/signup'),
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': _Anonkey,
+        },
+        body: json.encode({
+          'email': email,
+          'password': password,
+          'data': {'user': user}
+        }),
+      );
+      if(res.statusCode == 200){
+        final data = json.decode(res.body);
+        if(data['access_token'] != null){
+          _token = data['access_token'];
+        }
+        developer.log('Registro exitoso', name: 'AUTH');
+      }else{
+        throw Exception('Error en el registro: ${res.body}');
+      }
+    }catch (e){
+      developer.log('Ex en el registro', error: e.toString());
+      rethrow;
+    }
+   }
+
+   void logiut(){
+    _token = null;
+   }
 
   Future<List<Nota>> fetchNotas() async{
     try{
