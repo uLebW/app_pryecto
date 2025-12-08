@@ -29,7 +29,7 @@ class Tarea {
     return Tarea(
       id: json['id'] as int?,
       nombre: json['nombre'] as String,
-      completada: json['completada'] as bool? ?? true, 
+      completada: json['completada'] as bool? ?? false, 
       notaId: json['nota_id'] as int?,
     );
   }

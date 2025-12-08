@@ -1,4 +1,6 @@
 // lib/screens/home/agenda_screen.dart
+import 'package:app_pryecto/bloc/auth_bloc.dart';
+import 'package:app_pryecto/bloc/eventos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'nota_lista.dart';
@@ -11,9 +13,11 @@ class PantallaAgenda extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.teal,
+      extendBodyBehindAppBar: true,
       body: Column(
         children: [
-          const _AppBarAgenda(),
+          const SafeArea(child: _AppBarAgenda()),
           const SizedBox(height: 20.0),
 
           const _BotonAgregarNota(),
@@ -31,7 +35,39 @@ class _AppBarAgenda extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(height: 100.0, color: const Color.fromARGB(255, 162, 93, 172));
+    final authBloc = context.read<AuthBloc>();
+    final notaBloc = context.read<NotaBloc>();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: () {
+              authBloc.add(LougOutEvento());
+            },
+            icon: const Icon(
+              Icons.logout,
+              color: Color.fromARGB(255, 228, 226, 228),
+              size: 30,
+            ),
+          ),
+          const Text(
+            'Mi agenda',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color.fromARGB(255, 231, 230, 231),
+            ),
+          ),
+
+          IconButton(onPressed: (){
+            notaBloc.add(LoadNotas());
+          }, icon: const Icon(Icons.refresh, color: Color.fromARGB(255, 226, 223, 226), size: 30))
+        ],
+      ),
+    );
   }
 }
 
@@ -66,7 +102,7 @@ class _BotonAgregarNota extends StatelessWidget {
         child: Container(
           height: 50,
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 173, 100, 161),
+            color: const Color.fromARGB(255, 226, 231, 227),
             borderRadius: BorderRadius.circular(25),
           ),
           alignment: Alignment.center,

@@ -37,7 +37,7 @@ class NotaCard extends StatelessWidget {
         child: Container(
           height: 120,
           decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 151, 83, 165), // Color de ejemplo
+            color: const Color.fromARGB(255, 224, 221, 224), // Color de ejemplo
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: Padding(
@@ -48,7 +48,7 @@ class NotaCard extends StatelessWidget {
                 Text(
                   nota.nombre,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.teal,
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
                   ),
@@ -56,7 +56,7 @@ class NotaCard extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   'Fecha: ${_formatearFecha(nota.fechaLimite)}',
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  style: const TextStyle(color: Colors.teal, fontSize: 16),
                 ),
               ],
             ),

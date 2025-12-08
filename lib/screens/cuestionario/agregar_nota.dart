@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/bloc.dart';
 import '../../bloc/eventos.dart';
+import '../../bloc/estado.dart';
 import '../../data/estrucutura_datos.dart';
 
 class AgregarNotaPantalla extends StatefulWidget {
@@ -115,9 +116,7 @@ class _AgregarNotaPantallaState extends State<AgregarNotaPantalla> {
 
     // 2. Disparar el Evento BLoC
     context.read<NotaBloc>().add(AddNotaEvento(nuevaNota));
-
-    // 3. Cerrar el modal
-    Navigator.of(context).pop();
+    print('[FORM] Evento AddNotaEvento disparado con éxito.');
   }
 
   Future<void> _selecFecha() async {
@@ -143,219 +142,262 @@ class _AgregarNotaPantallaState extends State<AgregarNotaPantalla> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 158, 81, 154),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20.0),
-          topRight: Radius.circular(20.0),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          //Titulo
-          const Text(
-            "Agregar Nota",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            //Campo nombre
-            decoration: BoxDecoration(
-              color: Colors.grey[700],
-              borderRadius: BorderRadius.circular(10),
-              border: _nombreError != null
-                  ? Border.all(color: Colors.red)
-                  : null,
-            ),
-            child: TextField(
-              controller: _nombreControlador,
-              style: const TextStyle(color: Colors.white),
-              cursorColor: Colors.white,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.all(10),
-                hintText: "Nombre de la Nota",
-                hintStyle: const TextStyle(color: Colors.white54),
-                errorText: _nombreError,
-                errorStyle: const TextStyle(
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.bold,
+    return BlocListener<NotaBloc, NotaEstado>(
+      listener: (context, state) {
+        if (_isGuardar) {
+          if (state is LoadedEvento) {
+            Navigator.of(context).pop();
+          } else if (state is ErorNota) {
+            setState(() {
+              _isGuardar = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  "Hubo un problema en la conexion: ${state.mensaje}",
                 ),
               ),
+            );
+          }
+        }
+      },
+      child: SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.all(20.0),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 158, 81, 154),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
             ),
           ),
-          const SizedBox(height: 20),
-
-          // Campo Tipo de nota (Dropdown)
-          const Text('Tipo de nota', style: TextStyle(color: Colors.white70)),
-          DropdownButtonFormField<String>(
-            value: _tipoSeleccionado,
-            items: _tipoDeNota.map((String tipo) {
-              return DropdownMenuItem<String>(value: tipo, child: Text(tipo));
-            }).toList(),
-            onChanged: (String? nuevoValor) {
-              if (nuevoValor != null) {
-                setState(() {
-                  _tipoSeleccionado = nuevoValor;
-                });
-              }
-            },
-            dropdownColor: Colors.grey[800],
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white38),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Campo Descripción
-          const Text('Descripcion', style: TextStyle(color: Colors.white70)),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[700],
-              borderRadius: BorderRadius.circular(10),
-              border: _descError != null
-                  ? Border.all(color: Colors.redAccent)
-                  : null,
-            ),
-            child: TextField(
-              controller: _descripcionControler,
-              style: const TextStyle(color: Colors.white),
-              cursorColor: Colors.white,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.all(10),
-                errorText: _descError,
-                errorStyle: const TextStyle(
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Campo Fecha con botón de reloj
-          Column(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 50, // Simulación del campo de fecha
-                      decoration: BoxDecoration(
-                        color: Colors.grey[700],
-                        borderRadius: BorderRadius.circular(10),
-                        border: _fechaError != null
-                            ? Border.all(color: Colors.redAccent)
-                            : null,
-                      ),
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.only(left: 10),
-                      child: Text(
-                        'Fecha: ${_formatearFecha(_fechaSelec)}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  GestureDetector(
-                    onTap: _selecFecha,
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[700],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(Icons.access_time, color: Colors.white),
-                    ),
-                  ),
-                ],
+              //Titulo
+              const Text(
+                "Agregar Nota",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              if (_fechaError != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 5, left: 5),
-                  child: Text(
-                    _fechaError!,
-                    style: const TextStyle(
+              const SizedBox(height: 10),
+              Container(
+                //Campo nombre
+                decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(10),
+                  border: _nombreError != null
+                      ? Border.all(color: Colors.red)
+                      : null,
+                ),
+                child: TextField(
+                  controller: _nombreControlador,
+                  style: const TextStyle(color: Colors.white),
+                  cursorColor: Colors.white,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.all(10),
+                    hintText: "Nombre de la Nota",
+                    hintStyle: const TextStyle(color: Colors.white54),
+                    errorText: _nombreError,
+                    errorStyle: const TextStyle(
                       color: Colors.redAccent,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 30),
-          Text("Lista de tareas", style: TextStyle(color: Colors.white70)),
-          ..._controladorTarea.asMap().entries.map((entry) {
-            int index = entry.key;
-            TextEditingController controller = entry.value;
+              ),
+              const SizedBox(height: 20),
 
-            return Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: _CampoTarea(
-                controller: controller,
-                onDelete: _controladorTarea.length > 1
-                    ? () => _eliminarTarea(index)
-                    : null,
+              // Campo Tipo de nota (Dropdown)
+              const Text(
+                'Tipo de nota',
+                style: TextStyle(color: Colors.white70),
               ),
-            );
-          }),
-
-          GestureDetector(
-            onTap: _agregarCampoTarea,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 141, 91, 134),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add, color: Colors.green),
-                  Text("Agregar Tarea", style: TextStyle(color: Colors.white)),
-                ],
-              ),
-            ),
-          ),
-          // Botón Guardar
-          GestureDetector(
-            onTap: _isGuardar ? null : _guardarNpta,
-            child: Container(
-              height: 50,
-              decoration: BoxDecoration(
-                color: _isGuardar
-                    ? Colors.greenAccent
-                    : const Color.fromARGB(255, 71, 133, 196),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              alignment: Alignment.center,
-              child: const Text(
-                'GUARDAR',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              DropdownButtonFormField<String>(
+                value: _tipoSeleccionado,
+                items: _tipoDeNota.map((String tipo) {
+                  return DropdownMenuItem<String>(
+                    value: tipo,
+                    child: Text(tipo),
+                  );
+                }).toList(),
+                onChanged: (String? nuevoValor) {
+                  if (nuevoValor != null) {
+                    setState(() {
+                      _tipoSeleccionado = nuevoValor;
+                    });
+                  }
+                },
+                dropdownColor: Colors.grey[800],
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white38),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: 20),
+
+              // Campo Descripción
+              const Text(
+                'Descripcion',
+                style: TextStyle(color: Colors.white70),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(10),
+                  border: _descError != null
+                      ? Border.all(color: Colors.redAccent)
+                      : null,
+                ),
+                child: TextField(
+                  controller: _descripcionControler,
+                  style: const TextStyle(color: Colors.white),
+                  cursorColor: Colors.white,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.all(10),
+                    errorText: _descError,
+                    errorStyle: const TextStyle(
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Campo Fecha con botón de reloj
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 50, // Simulación del campo de fecha
+                          decoration: BoxDecoration(
+                            color: Colors.grey[700],
+                            borderRadius: BorderRadius.circular(10),
+                            border: _fechaError != null
+                                ? Border.all(color: Colors.redAccent)
+                                : null,
+                          ),
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Text(
+                            'Fecha: ${_formatearFecha(_fechaSelec)}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: _selecFecha,
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[700],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.access_time,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_fechaError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5, left: 5),
+                      child: Text(
+                        _fechaError!,
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 30),
+              Text("Lista de tareas", style: TextStyle(color: Colors.white70)),
+              ..._controladorTarea.asMap().entries.map((entry) {
+                int index = entry.key;
+                TextEditingController controller = entry.value;
+
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: _CampoTarea(
+                    controller: controller,
+                    onDelete: _controladorTarea.length > 1
+                        ? () => _eliminarTarea(index)
+                        : null,
+                  ),
+                );
+              }),
+
+              GestureDetector(
+                onTap: _agregarCampoTarea,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 141, 91, 134),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add, color: Colors.green),
+                      Text(
+                        "Agregar Tarea",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Botón Guardar
+              GestureDetector(
+                onTap: _isGuardar ? null : _guardarNpta,
+                child: Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: _isGuardar
+                        ? Colors.grey
+                        : const Color.fromARGB(255, 71, 133, 196),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  alignment: Alignment.center,
+                  child: _isGuardar
+                  ? const SizedBox(
+                    width: 20.0,
+                    height: 20.0,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                  )
+                  : const Text(
+                    'GUARDAR',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
-          const SizedBox(height: 20),
-        ],
+        ),
       ),
     );
   }

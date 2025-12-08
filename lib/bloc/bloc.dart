@@ -17,13 +17,16 @@ class NotaBloc extends Bloc<NotaEvento, NotaEstado> {
 
   void _onAddNota(AddNotaEvento event, Emitter<NotaEstado> emit) async {
     try {
+      print('[BLOC] Ejecutando await repob.addNota...');
       // ⭐️ Guardar en Supabase
       await repob.addNota(event.note); 
       
       // ⭐️ Recargar la lista para obtener el estado actual con el nuevo ID
       add(LoadNotas()); 
+      print('[BLOC] AddNota completado y LoadNotas disparado.');
     } catch (e) {
       // Manejar error
+      print('[BLOC] ERROR CRÍTICO al procesar AddNota: $e');
       // Si falla la adición, re-emitir el estado anterior o uno de error.
       if (state is LoadedEvento) {
         emit(LoadedEvento((state as LoadedEvento).notas));
@@ -35,9 +38,11 @@ class NotaBloc extends Bloc<NotaEvento, NotaEstado> {
 
   void _ActualizarTarea(ActualizarTarea event, Emitter<NotaEstado> emit) async{
     try{
+      print('[BLOC] Ejecutando addNota...');
       await repob.updateTarea(event.tarea);
       add(LoadNotas());
     } catch (e){
+      print('[BLOC] ERROR CRÍTICO al procesar AddNota: $e');
       if(state is LoadedEvento){
         emit(LoadedEvento((state as LoadedEvento).notas));
       }else{
